@@ -29,6 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const exclusionsList = document.getElementById("exclusionsList");
 
+  // Элементы флажка исключений
+  const exclusionFlag = document.getElementById("exclusionFlag");
+  const exclusionPanel = document.getElementById("exclusionPanel");
+  const exclusionPanelInput = document.getElementById("exclusionInput");
+  const addExclusionsBtn = document.getElementById("addExclusionsBtn");
+  const exclusionFeedback = document.getElementById("exclusionFeedback");
+
   // Состояние приложения
   let clusters = [];
   let articles = [];
@@ -53,6 +60,57 @@ document.addEventListener("DOMContentLoaded", function () {
   excludeSelectedButton.addEventListener("click", excludeSelectedKeywords);
   excludeButton.addEventListener("click", addExclusions);
   clearExclusionsButton.addEventListener("click", clearExclusions);
+
+  // Обработчики для флажка исключений
+  exclusionFlag.addEventListener("click", function (e) {
+    e.stopPropagation();
+    exclusionPanel.style.display =
+      exclusionPanel.style.display === "block" ? "none" : "block";
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!exclusionPanel.contains(e.target) && e.target !== exclusionFlag) {
+      exclusionPanel.style.display = "none";
+    }
+  });
+
+  addExclusionsBtn.addEventListener("click", function () {
+    const phrases = exclusionPanelInput.value
+      .split("\n")
+      .map((phrase) => phrase.trim())
+      .filter((phrase) => phrase);
+
+    if (phrases.length === 0) {
+      showFeedback("Введите хотя бы одно слово", "error");
+      return;
+    }
+
+    phrases.forEach((phrase) => {
+      if (!exclusions.includes(phrase.toLowerCase())) {
+        exclusions.push(phrase.toLowerCase());
+      }
+    });
+
+    showFeedback(`Добавлено ${phrases.length} слов в исключения`, "success");
+    exclusionPanelInput.value = "";
+
+    renderExclusions();
+    applyExclusions();
+    saveAllData();
+    renderClusters();
+  });
+
+  function showFeedback(message, type) {
+    exclusionFeedback.textContent = message;
+    exclusionFeedback.style.display = "block";
+    exclusionFeedback.style.backgroundColor =
+      type === "error" ? "#ffebee" : "#e8f5e9";
+    exclusionFeedback.style.color = type === "error" ? "#c62828" : "#2e7d32";
+
+    setTimeout(() => {
+      exclusionFeedback.style.display = "none";
+    }, 3000);
+  }
 
   // Обработчик ввода текста с автосохранением
   keywordsInput.addEventListener("input", function () {
@@ -749,6 +807,32 @@ document.addEventListener("DOMContentLoaded", function () {
       applyExclusions();
       saveAllData();
     }
+  }
+
+  // Функция применения исключений к кластерам
+  function applyExclusions() {
+    if (exclusions.length === 0) return;
+
+    for (let i = clusters.length - 1; i >= 0; i--) {
+      const cluster = clusters[i];
+
+      for (let j = cluster.keywords.length - 1; j >= 0; j--) {
+        const keyword = cluster.keywords[j];
+        const keywordLower = keyword.phrase.toLowerCase();
+
+        // Проверяем, содержит ли ключевая фраза любое из исключенных слов
+        if (exclusions.some((exclusion) => keywordLower.includes(exclusion))) {
+          cluster.keywords.splice(j, 1);
+        }
+      }
+
+      // Если кластер пуст, удаляем его
+      if (cluster.keywords.length === 0) {
+        clusters.splice(i, 1);
+      }
+    }
+
+    renderClusters();
   }
 
   // Функция добавления исключений из текстового поля
