@@ -1,0 +1,345 @@
+:root {
+  --primary-color: #3498db;
+  --primary-hover: #2980b9;
+  --danger-color: #e74c3c;
+  --danger-hover: #c0392b;
+  --success-color: #2ecc71;
+  --success-hover: #27ae60;
+  --warning-color: #f39c12;
+  --warning-hover: #e67e22;
+  --disabled-color: #95a5a6;
+  --border-color: #ddd;
+  --bg-color: #f5f5f5;
+  --header-bg: #2c3e50;
+  --cluster-header-bg: #f2f2f2;
+  --progress-color: #2ecc71;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: var(--bg-color);
+  color: #333;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: var(--header-bg);
+  margin-bottom: 30px;
+}
+
+h3 {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.input-section {
+  margin-bottom: 30px;
+}
+
+.input-columns {
+  display: flex;
+  gap: 40px;
+}
+
+.input-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 14px;
+  margin-bottom: 10px;
+  flex-grow: 1;
+  font-family: inherit;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-group input {
+  margin: 0;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+button:disabled {
+  background-color: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.progress-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #ecf0f1;
+  border-radius: 4px;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: var(--progress, 0%);
+  background-color: var(--progress-color);
+  transition: width 0.3s;
+}
+
+#progressText {
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.results-section {
+  margin-top: 20px;
+}
+
+.actions {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.clusters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.cluster {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.cluster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.cluster-title {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.delete-cluster {
+  background-color: var(--danger-color);
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.delete-cluster:hover {
+  background-color: var(--danger-hover);
+}
+
+.keywords-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.keywords-table th,
+.keywords-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  text-align: left;
+}
+
+.keywords-table th {
+  background-color: var(--cluster-header-bg);
+}
+
+.keywords-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.keywords-table tr:hover {
+  background-color: #f0f0f0;
+}
+
+.delete-keyword,
+.add-to-articles {
+  padding: 3px 6px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.add-to-articles {
+  background-color: var(--success-color);
+}
+
+.add-to-articles:hover {
+  background-color: var(--success-hover);
+}
+
+.delete-keyword {
+  background-color: var(--danger-color);
+}
+
+.delete-keyword:hover {
+  background-color: var(--danger-hover);
+}
+
+.status {
+  margin-top: 10px;
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+.articles-container {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+.article-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.article-item:last-child {
+  border-bottom: none;
+}
+
+.remove-article {
+  background-color: var(--danger-color);
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.remove-article:hover {
+  background-color: var(--danger-hover);
+}
+
+.fas {
+  font-size: 14px;
+}
+
+.undo-section {
+  margin-top: 10px;
+  text-align: center;
+}
+
+#undoButton {
+  background-color: var(--warning-color);
+  width: 100%;
+}
+
+#undoButton:hover {
+  background-color: var(--warning-hover);
+}
+
+.checkbox-cell {
+  width: 20px;
+  padding-right: 0 !important;
+}
+
+.checkbox-cell input {
+  margin: 0;
+  cursor: pointer;
+}
+
+#clearAllButton {
+  background-color: var(--danger-color);
+}
+
+#clearAllButton:hover {
+  background-color: var(--danger-hover);
+}
+
+#deleteSelectedButton {
+  background-color: var(--danger-color);
+}
+
+#deleteSelectedButton:hover {
+  background-color: var(--danger-hover);
+}
+
+#addSelectedToArticlesButton {
+  background-color: var(--success-color);
+}
+
+#addSelectedToArticlesButton:hover {
+  background-color: var(--success-hover);
+}
+
+#clearArticlesButton {
+  background-color: var(--danger-color);
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+#clearArticlesButton:hover {
+  background-color: var(--danger-hover);
+}
