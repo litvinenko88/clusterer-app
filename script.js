@@ -18,12 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const removeGeoCheckbox = document.getElementById("removeGeoCheckbox");
   const removeDupesCheckbox = document.getElementById("removeDupesCheckbox");
+  const floatingActions = document.getElementById("floatingActions");
 
   // Состояние приложения
   let clusters = [];
   let articles = [];
   let lastDeletedItems = null;
   let selectedKeywords = new Set();
+  let keywordUndoButtons = {};
 
   // Загрузка сохраненных данных
   loadSavedData();
@@ -138,11 +140,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const geoPatterns = [
       // Города
-      /\b(москв[а-яё]*|санкт-петербург[а-яё]*|спб|новосибирск[а-яё]*|екатеринбург[а-яё]*|казан[а-яё]*|нижний новгород[а-яё]*|челябинск[а-яё]*|самар[а-яё]*|омск[а-яё]*|ростов[а-яё]*|уф[а-яё]*|красноярск[а-яё]*|перм[а-яё]*|воронеж[а-яё]*|волгоград[а-яё]*)\b/i,
+      /\b(москв[а-яё]*|санкт-петербург[а-яё]*|спб|новосибирск[а-яё]*|екатеринбург[а-яё]*|казан[а-яё]*|нижний новгород[а-яё]*|челябинск[а-яё]*|самар[а-яё]*|омск[а-яё]*|ростов[а-яё]*|уф[а-яё]*|красноярск[а-яё]*|перм[а-яё]*|воронеж[а-яё]*|волгоград[а-яё]*|краснодар[а-яё]*|сочи[а-яё]*|владивосток[а-яё]*|иркутск[а-яё]*|хабаровск[а-яё]*|ярославл[а-яё]*|тюмен[а-яё]*|тольятти[а-яё]*|барнаул[а-яё]*|ижевск[а-яё]*|махачкал[а-яё]*|хасан[а-яё]*|оренбург[а-яё]*|новгород[а-яё]*|кемеров[а-яё]*|рязан[а-яё]*|астрахан[а-яё]*|набережные челны|пенз[а-яё]*|липецк[а-яё]*|киров[а-яё]*|чебоксар[а-яё]*|калининград[а-яё]*|тул[а-яё]*|ставропол[а-яё]*|белгород[а-яё]*|архангельск[а-яё]*|владимир[а-яё]*|севастопол[а-яё]*|курск[а-яё]*|улан-удэ|чебоксар[а-яё]*|калуг[а-яё]*|брянск[а-яё]*|курган[а-яё]*|орл[а-яё]*|владикавказ[а-яё]*|псков[а-яё]*|мурманск[а-яё]*|донецк[а-яё]*|луганск[а-яё]*|симферопол[а-яё]*)\b/i,
       // Области и регионы
-      /\b(московск[а-яё]*\s*обл[а-яё]*|ленинградск[а-яё]*\s*обл[а-яё]*|свердловск[а-яё]*\s*обл[а-яё]*|нижегородск[а-яё]*\s*обл[а-яё]*|челябинск[а-яё]*\s*обл[а-яё]*|самарск[а-яё]*\s*обл[а-яё]*|омск[а-яё]*\s*обл[а-яё]*|ростовск[а-яё]*\s*обл[а-яё]*|красноярск[а-яё]*\s*кра[яй]|пермск[а-яё]*\s*кра[яй]|краснодарск[а-яё]*\s*кра[яй]|алтайск[а-яё]*\s*кра[яй]|ставропольск[а-яё]*\s*кра[яй])\b/i,
+      /\b(московск[а-яё]*\s*обл[а-яё]*|ленинградск[а-яё]*\s*обл[а-яё]*|свердловск[а-яё]*\s*обл[а-яё]*|нижегородск[а-яё]*\s*обл[а-яё]*|челябинск[а-яё]*\s*обл[а-яё]*|самарск[а-яё]*\s*обл[а-яё]*|омск[а-яё]*\s*обл[а-яё]*|ростовск[а-яё]*\s*обл[а-яё]*|красноярск[а-яё]*\s*кра[яй]|пермск[а-яё]*\s*кра[яй]|краснодарск[а-яё]*\s*кра[яй]|алтайск[а-яё]*\s*кра[яй]|ставропольск[а-яё]*\s*кра[яй]|хабаровск[а-яё]*\s*кра[яй]|приморск[а-яё]*\s*кра[яй]|забайкальск[а-яё]*\s*кра[яй]|камчатск[а-яё]*\s*кра[яй])\b/i,
       // Страны
-      /\b(росси[яи]|рф|украин[аы]|белорусси[яи]|казахстан[а]?|сша|америк[аи]|германи[яи]|франци[яи]|итали[яи]|испани[яи]|кита[яй]|япони[яи])\b/i,
+      /\b(росси[яи]|рф|украин[аы]|белорусси[яи]|казахстан[а]?|сша|америк[аи]|германи[яи]|франци[яи]|итали[яи]|испани[яи]|кита[яй]|япони[яи]|инди[яи]|бразили[яи]|канад[аы]|австрали[яи]|швейцари[яи]|швеци[яи]|норвеги[яи]|финлянди[яи]|польш[аи]|чехи[яи]|словаки[яи]|венгри[яи]|румыни[яи]|болгари[яи]|греци[яи]|турци[яи])\b/i,
     ];
 
     return keywordsData.filter((item) => {
@@ -200,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         name: `Кластер: ${name}`,
         keywords,
         id: generateId(),
+        collapsed: false,
       }))
       .sort((a, b) => b.keywords.length - a.keywords.length);
   }
@@ -218,15 +221,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     clusters.forEach((cluster, clusterIndex) => {
       const clusterElement = document.createElement("div");
-      clusterElement.className = "cluster";
+      clusterElement.className = `cluster ${
+        cluster.collapsed ? "cluster-collapsed" : ""
+      }`;
       clusterElement.dataset.clusterId = cluster.id;
+
+      const selectAllId = `select-all-${cluster.id}`;
 
       clusterElement.innerHTML = `
                 <div class="cluster-header">
-                    <div class="cluster-title">${cluster.name}</div>
-                    <button class="delete-cluster" data-index="${clusterIndex}">
-                        <i class="fas fa-trash"></i> Удалить кластер
-                    </button>
+                    <div class="cluster-title">
+                        <input type="checkbox" id="${selectAllId}" class="select-all-checkbox">
+                        <span>${cluster.name}</span>
+                    </div>
+                    <div>
+                        <button class="delete-cluster" data-index="${clusterIndex}">
+                            <i class="fas fa-trash"></i> Удалить кластер
+                        </button>
+                    </div>
                 </div>
                 <table class="keywords-table">
                     <thead>
@@ -265,6 +277,37 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
       clustersContainer.appendChild(clusterElement);
+
+      // Обработчик сворачивания/разворачивания кластера
+      const header = clusterElement.querySelector(".cluster-header");
+      header.addEventListener("click", (e) => {
+        if (
+          !e.target.classList.contains("delete-cluster") &&
+          !e.target.classList.contains("fa-trash") &&
+          !e.target.classList.contains("select-all-checkbox") &&
+          e.target.tagName !== "INPUT"
+        ) {
+          cluster.collapsed = !cluster.collapsed;
+          clusterElement.classList.toggle("cluster-collapsed");
+          saveAllData();
+        }
+      });
+
+      // Обработчик выбора всех ключевых слов в кластере
+      const selectAllCheckbox = clusterElement.querySelector(`#${selectAllId}`);
+      selectAllCheckbox.addEventListener("change", function () {
+        const checkboxes = clusterElement.querySelectorAll(".keyword-checkbox");
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = this.checked;
+          const keywordId = checkbox.dataset.id;
+          if (this.checked) {
+            selectedKeywords.add(keywordId);
+          } else {
+            selectedKeywords.delete(keywordId);
+          }
+        });
+        updateSelectionButtons();
+      });
     });
 
     // Добавляем обработчики для чекбоксов
@@ -282,7 +325,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Добавляем обработчики для кнопок удаления кластеров
     document.querySelectorAll(".delete-cluster").forEach((button) => {
-      button.addEventListener("click", function () {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation();
         const index = parseInt(this.dataset.index);
         lastDeletedItems = {
           type: "cluster",
@@ -298,18 +342,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Добавляем обработчики для кнопок удаления ключевых слов
     document.querySelectorAll(".delete-keyword").forEach((button) => {
-      button.addEventListener("click", function () {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation();
         const clusterIndex = parseInt(this.dataset.cluster);
         const keywordIndex = parseInt(this.dataset.keyword);
         const cluster = clusters[clusterIndex];
+        const keyword = cluster.keywords[keywordIndex];
 
-        lastDeletedItems = {
-          type: "keyword",
-          data: cluster.keywords[keywordIndex],
-          clusterIndex: clusterIndex,
-          keywordIndex: keywordIndex,
-        };
-
+        // Удаляем ключевое слово
         cluster.keywords.splice(keywordIndex, 1);
 
         // Если кластер пуст, удаляем его
@@ -317,15 +357,51 @@ document.addEventListener("DOMContentLoaded", function () {
           clusters.splice(clusterIndex, 1);
         }
 
-        renderClusters();
-        showUndoButton();
+        // Показываем кнопку "Вернуть" рядом с удаленным элементом
+        const keywordId = keyword.id;
+        const keywordRow = document.querySelector(
+          `tr[data-keyword-id="${keywordId}"]`
+        );
+        if (keywordRow) {
+          const undoButton = document.createElement("button");
+          undoButton.className = "keyword-delete-undo";
+          undoButton.innerHTML = '<i class="fas fa-undo"></i> Вернуть';
+          undoButton.onclick = (e) => {
+            e.stopPropagation();
+            undoKeywordDelete(keywordId, clusterIndex, keywordIndex, keyword);
+          };
+
+          const cell = keywordRow.querySelector("td:last-child");
+          if (cell) {
+            cell.innerHTML = "";
+            cell.appendChild(undoButton);
+
+            // Удаляем кнопку через 5 секунд
+            setTimeout(() => {
+              if (cell.contains(undoButton)) {
+                cell.innerHTML = "";
+                renderClusters();
+              }
+            }, 3000);
+          }
+        }
+
+        // Сохраняем информацию для отмены
+        lastDeletedItems = {
+          type: "keyword",
+          data: keyword,
+          clusterIndex: clusterIndex,
+          keywordIndex: keywordIndex,
+        };
+
         saveAllData();
       });
     });
 
     // Добавляем обработчики для кнопок добавления в статьи
     document.querySelectorAll(".add-to-articles").forEach((button) => {
-      button.addEventListener("click", function () {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation();
         const clusterIndex = parseInt(this.dataset.cluster);
         const keywordIndex = parseInt(this.dataset.keyword);
         const keyword = clusters[clusterIndex].keywords[keywordIndex];
@@ -350,6 +426,25 @@ document.addEventListener("DOMContentLoaded", function () {
         saveAllData();
       });
     });
+  }
+
+  // Функция для отмены удаления ключевого слова
+  function undoKeywordDelete(keywordId, clusterIndex, keywordIndex, keyword) {
+    // Проверяем, существует ли еще кластер
+    if (clusterIndex < clusters.length) {
+      clusters[clusterIndex].keywords.splice(keywordIndex, 0, keyword);
+    } else {
+      // Если кластер был удален, создаем новый с этим ключевым словом
+      clusters.push({
+        name: `Кластер: ${keyword.phrase.split(" ").slice(0, 2).join(" ")}`,
+        keywords: [keyword],
+        id: generateId(),
+        collapsed: false,
+      });
+    }
+
+    renderClusters();
+    saveAllData();
   }
 
   // Функция отрисовки статей
@@ -391,8 +486,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // Функция обновления состояния кнопок выбора
   function updateSelectionButtons() {
     const hasSelection = selectedKeywords.size > 0;
-    deleteSelectedButton.disabled = !hasSelection;
-    addSelectedToArticlesButton.disabled = !hasSelection;
+
+    if (hasSelection) {
+      floatingActions.style.display = "flex";
+      deleteSelectedButton.disabled = false;
+      addSelectedToArticlesButton.disabled = false;
+    } else {
+      floatingActions.style.display = "none";
+      deleteSelectedButton.disabled = true;
+      addSelectedToArticlesButton.disabled = true;
+    }
   }
 
   // Функция удаления выбранных ключевых слов
@@ -484,19 +587,47 @@ document.addEventListener("DOMContentLoaded", function () {
     if (lastDeletedItems.type === "cluster") {
       clusters.splice(lastDeletedItems.index, 0, lastDeletedItems.data);
     } else if (lastDeletedItems.type === "keyword") {
-      clusters[lastDeletedItems.clusterIndex].keywords.splice(
-        lastDeletedItems.keywordIndex,
-        0,
-        lastDeletedItems.data
-      );
+      // Проверяем, существует ли еще кластер
+      if (lastDeletedItems.clusterIndex < clusters.length) {
+        clusters[lastDeletedItems.clusterIndex].keywords.splice(
+          lastDeletedItems.keywordIndex,
+          0,
+          lastDeletedItems.data
+        );
+      } else {
+        // Если кластер был удален, создаем новый с этим ключевым словом
+        clusters.push({
+          name: `Кластер: ${lastDeletedItems.data.phrase
+            .split(" ")
+            .slice(0, 2)
+            .join(" ")}`,
+          keywords: [lastDeletedItems.data],
+          id: generateId(),
+          collapsed: false,
+        });
+      }
     } else if (lastDeletedItems.type === "multiple") {
       // Восстанавливаем в обратном порядке, чтобы сохранить индексы
       lastDeletedItems.data.reverse().forEach((item) => {
-        clusters[item.clusterIndex].keywords.splice(
-          item.keywordIndex,
-          0,
-          item.keyword
-        );
+        // Проверяем, существует ли еще кластер
+        if (item.clusterIndex < clusters.length) {
+          clusters[item.clusterIndex].keywords.splice(
+            item.keywordIndex,
+            0,
+            item.keyword
+          );
+        } else {
+          // Если кластер был удален, создаем новый с этим ключевым словом
+          clusters.push({
+            name: `Кластер: ${item.keyword.phrase
+              .split(" ")
+              .slice(0, 2)
+              .join(" ")}`,
+            keywords: [item.keyword],
+            id: generateId(),
+            collapsed: false,
+          });
+        }
       });
     }
 

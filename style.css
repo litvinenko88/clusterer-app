@@ -21,6 +21,7 @@ body {
   padding: 20px;
   background-color: var(--bg-color);
   color: #333;
+  padding-bottom: 80px;
 }
 
 .container {
@@ -30,6 +31,7 @@ body {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 h1 {
@@ -95,6 +97,7 @@ textarea {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -153,13 +156,6 @@ button:disabled {
   margin-top: 20px;
 }
 
-.actions {
-  margin-bottom: 15px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 .clusters-container {
   display: flex;
   flex-direction: column;
@@ -180,11 +176,15 @@ button:disabled {
   margin-bottom: 10px;
   padding-bottom: 5px;
   border-bottom: 1px solid #eee;
+  cursor: pointer;
 }
 
 .cluster-title {
   font-weight: bold;
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .delete-cluster {
@@ -258,6 +258,7 @@ button:disabled {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 200px;
+  max-height: 200px;
 }
 
 .article-item {
@@ -342,4 +343,41 @@ button:disabled {
 
 #clearArticlesButton:hover {
   background-color: var(--danger-hover);
+}
+
+.floating-actions {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 15px;
+  z-index: 100;
+}
+
+.cluster-collapsed .keywords-table {
+  display: none;
+}
+
+.cluster-collapsed .status {
+  display: none;
+}
+
+.keyword-delete-undo {
+  background-color: var(--warning-color);
+  padding: 5px 10px;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.keyword-delete-undo:hover {
+  background-color: var(--warning-hover);
+}
+
+.select-all-checkbox {
+  margin-right: 10px;
 }

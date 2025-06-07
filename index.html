@@ -36,6 +36,9 @@
               <button id="clusterButton">
                 <i class="fas fa-project-diagram"></i> Кластеризовать
               </button>
+              <button id="exportButton" disabled>
+                <i class="fas fa-download"></i> Экспорт кластеров
+              </button>
               <button id="clearAllButton">
                 <i class="fas fa-trash-alt"></i> Очистить всё
               </button>
@@ -66,18 +69,16 @@
       </div>
 
       <div class="results-section">
-        <div class="actions">
-          <button id="exportButton" disabled>
-            <i class="fas fa-download"></i> Экспорт кластеров
-          </button>
-          <button id="deleteSelectedButton" disabled>
-            <i class="fas fa-trash-alt"></i> Удалить выбранные
-          </button>
-          <button id="addSelectedToArticlesButton" disabled>
-            <i class="fas fa-plus"></i> Добавить в статьи
-          </button>
-        </div>
         <div id="clustersContainer" class="clusters-container"></div>
+      </div>
+
+      <div class="floating-actions" id="floatingActions" style="display: none">
+        <button id="deleteSelectedButton" disabled>
+          <i class="fas fa-trash-alt"></i> Удалить выбранные
+        </button>
+        <button id="addSelectedToArticlesButton" disabled>
+          <i class="fas fa-plus"></i> Добавить в статьи
+        </button>
       </div>
     </div>
 
