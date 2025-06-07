@@ -98,6 +98,22 @@
           <i class="fas fa-ban"></i> Исключить выбранные
         </button>
       </div>
+
+      <div class="exclusion-flag-container">
+        <div class="exclusion-flag" id="exclusionFlag">
+          <i class="fas fa-ban"></i>
+        </div>
+        <div class="exclusion-panel" id="exclusionPanel">
+          <h3>Добавить исключения</h3>
+          <textarea
+            id="exclusionInput"
+            placeholder="Введите слова для исключения (каждое с новой строки)"></textarea>
+          <button id="addExclusionsBtn">
+            <i class="fas fa-plus"></i> Добавить
+          </button>
+          <div class="exclusion-feedback" id="exclusionFeedback"></div>
+        </div>
+      </div>
     </div>
 
     <script src="xlsx.full.min.js"></script>
