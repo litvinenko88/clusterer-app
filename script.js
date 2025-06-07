@@ -16,16 +16,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const addSelectedToArticlesButton = document.getElementById(
     "addSelectedToArticlesButton"
   );
+  const excludeSelectedButton = document.getElementById(
+    "excludeSelectedButton"
+  );
   const removeGeoCheckbox = document.getElementById("removeGeoCheckbox");
   const removeDupesCheckbox = document.getElementById("removeDupesCheckbox");
   const floatingActions = document.getElementById("floatingActions");
+  const exclusionsInput = document.getElementById("exclusionsInput");
+  const excludeButton = document.getElementById("excludeButton");
+  const clearExclusionsButton = document.getElementById(
+    "clearExclusionsButton"
+  );
+  const exclusionsList = document.getElementById("exclusionsList");
 
   // Состояние приложения
   let clusters = [];
   let articles = [];
+  let exclusions = [];
   let lastDeletedItems = null;
   let selectedKeywords = new Set();
   let keywordUndoButtons = {};
+  let selectedText = "";
 
   // Загрузка сохраненных данных
   loadSavedData();
@@ -39,11 +50,73 @@ document.addEventListener("DOMContentLoaded", function () {
   undoButton.addEventListener("click", undoLastDelete);
   deleteSelectedButton.addEventListener("click", deleteSelectedKeywords);
   addSelectedToArticlesButton.addEventListener("click", addSelectedToArticles);
+  excludeSelectedButton.addEventListener("click", excludeSelectedKeywords);
+  excludeButton.addEventListener("click", addExclusions);
+  clearExclusionsButton.addEventListener("click", clearExclusions);
 
   // Обработчик ввода текста с автосохранением
   keywordsInput.addEventListener("input", function () {
     saveToLocalStorage("keywordsInput", this.value);
   });
+
+  // Обработчик выделения текста в кластерах
+  document.addEventListener("selectionchange", function () {
+    const selection = window.getSelection();
+    if (
+      selection.toString().trim() &&
+      clustersContainer.contains(selection.anchorNode)
+    ) {
+      selectedText = selection.toString().trim();
+    } else {
+      selectedText = "";
+    }
+  });
+
+  // Обработчик клика правой кнопкой мыши для добавления в исключения
+  clustersContainer.addEventListener("contextmenu", function (e) {
+    if (selectedText) {
+      e.preventDefault();
+      showExcludeContextMenu(e, selectedText);
+    }
+  });
+
+  // Функция показа контекстного меню для исключения
+  function showExcludeContextMenu(e, text) {
+    const menu = document.createElement("div");
+    menu.className = "context-menu";
+    menu.innerHTML = `
+      <button class="context-menu-item" id="excludeSelectedText">
+        <i class="fas fa-ban"></i> Исключить "${text}"
+      </button>
+    `;
+    menu.style.position = "absolute";
+    menu.style.left = `${e.pageX}px`;
+    menu.style.top = `${e.pageY}px`;
+    menu.style.zIndex = "1000";
+    menu.style.backgroundColor = "white";
+    menu.style.border = "1px solid #ddd";
+    menu.style.borderRadius = "4px";
+    menu.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
+
+    document.body.appendChild(menu);
+
+    document
+      .getElementById("excludeSelectedText")
+      .addEventListener("click", function () {
+        addExclusion(text);
+        document.body.removeChild(menu);
+      });
+
+    // Закрытие меню при клике вне его
+    const closeMenu = function (e) {
+      if (!menu.contains(e.target)) {
+        document.body.removeChild(menu);
+        document.removeEventListener("click", closeMenu);
+      }
+    };
+
+    document.addEventListener("click", closeMenu);
+  }
 
   // Функция обработки кластеризации
   function clusterKeywordsHandler() {
@@ -63,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       clusters = clusterKeywords(keywordsData);
+      applyExclusions();
       renderClusters();
       exportButton.disabled = false;
       saveAllData();
@@ -148,6 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     return keywordsData.filter((item) => {
+      // Проверяем, содержит ли фраза любое гео-слово
       return !geoPatterns.some((pattern) => pattern.test(item.phrase));
     });
   }
@@ -265,6 +340,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                     </button>
                                     <button class="delete-keyword" data-cluster="${clusterIndex}" data-keyword="${keywordIndex}">
                                         <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                    <button class="exclude-keyword" data-cluster="${clusterIndex}" data-keyword="${keywordIndex}">
+                                        <i class="fas fa-ban"></i> Исключить
                                     </button>
                                 </td>
                             </tr>
@@ -426,6 +504,30 @@ document.addEventListener("DOMContentLoaded", function () {
         saveAllData();
       });
     });
+
+    // Добавляем обработчики для кнопок исключения
+    document.querySelectorAll(".exclude-keyword").forEach((button) => {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const clusterIndex = parseInt(this.dataset.cluster);
+        const keywordIndex = parseInt(this.dataset.keyword);
+        const keyword = clusters[clusterIndex].keywords[keywordIndex];
+
+        // Добавляем фразу в исключения
+        addExclusion(keyword.phrase);
+
+        // Удаляем из кластера
+        clusters[clusterIndex].keywords.splice(keywordIndex, 1);
+
+        // Если кластер пуст, удаляем его
+        if (clusters[clusterIndex].keywords.length === 0) {
+          clusters.splice(clusterIndex, 1);
+        }
+
+        renderClusters();
+        saveAllData();
+      });
+    });
   }
 
   // Функция для отмены удаления ключевого слова
@@ -483,6 +585,38 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Функция отрисовки списка исключений
+  function renderExclusions() {
+    exclusionsList.innerHTML = "";
+
+    if (exclusions.length === 0) {
+      exclusionsList.innerHTML = '<div class="status">Нет исключений</div>';
+      return;
+    }
+
+    exclusions.forEach((exclusion, index) => {
+      const exclusionElement = document.createElement("div");
+      exclusionElement.className = "exclusion-item";
+      exclusionElement.innerHTML = `
+                <span>${exclusion}</span>
+                <button class="remove-exclusion" data-index="${index}">
+                    <i class="fas fa-times"></i> Удалить
+                </button>
+            `;
+      exclusionsList.appendChild(exclusionElement);
+    });
+
+    // Добавляем обработчики для кнопок удаления исключений
+    document.querySelectorAll(".remove-exclusion").forEach((button) => {
+      button.addEventListener("click", function () {
+        const index = parseInt(this.dataset.index);
+        exclusions.splice(index, 1);
+        renderExclusions();
+        saveAllData();
+      });
+    });
+  }
+
   // Функция обновления состояния кнопок выбора
   function updateSelectionButtons() {
     const hasSelection = selectedKeywords.size > 0;
@@ -491,10 +625,12 @@ document.addEventListener("DOMContentLoaded", function () {
       floatingActions.style.display = "flex";
       deleteSelectedButton.disabled = false;
       addSelectedToArticlesButton.disabled = false;
+      excludeSelectedButton.disabled = false;
     } else {
       floatingActions.style.display = "none";
       deleteSelectedButton.disabled = true;
       addSelectedToArticlesButton.disabled = true;
+      excludeSelectedButton.disabled = true;
     }
   }
 
@@ -571,6 +707,106 @@ document.addEventListener("DOMContentLoaded", function () {
     saveAllData();
   }
 
+  // Функция исключения выбранных ключевых слов
+  function excludeSelectedKeywords() {
+    if (selectedKeywords.size === 0) return;
+
+    // Проходим по всем кластерам и добавляем выбранные ключевые слова в исключения
+    for (let i = clusters.length - 1; i >= 0; i--) {
+      const cluster = clusters[i];
+
+      for (let j = cluster.keywords.length - 1; j >= 0; j--) {
+        const keyword = cluster.keywords[j];
+
+        if (selectedKeywords.has(keyword.id)) {
+          // Добавляем в исключения, если еще нет
+          if (!exclusions.includes(keyword.phrase.toLowerCase())) {
+            addExclusion(keyword.phrase);
+          }
+
+          // Удаляем из кластера
+          cluster.keywords.splice(j, 1);
+        }
+      }
+
+      // Если кластер пуст, удаляем его
+      if (cluster.keywords.length === 0) {
+        clusters.splice(i, 1);
+      }
+    }
+
+    selectedKeywords.clear();
+    renderClusters();
+    saveAllData();
+  }
+
+  // Функция добавления исключения
+  function addExclusion(phrase) {
+    const normalizedPhrase = phrase.toLowerCase().trim();
+    if (normalizedPhrase && !exclusions.includes(normalizedPhrase)) {
+      exclusions.push(normalizedPhrase);
+      renderExclusions();
+      applyExclusions();
+      saveAllData();
+    }
+  }
+
+  // Функция добавления исключений из текстового поля
+  function addExclusions() {
+    const phrases = exclusionsInput.value
+      .split("\n")
+      .map((phrase) => phrase.trim())
+      .filter((phrase) => phrase);
+
+    if (phrases.length === 0) return;
+
+    phrases.forEach((phrase) => {
+      if (!exclusions.includes(phrase.toLowerCase())) {
+        exclusions.push(phrase.toLowerCase());
+      }
+    });
+
+    exclusionsInput.value = "";
+    renderExclusions();
+    applyExclusions();
+    saveAllData();
+  }
+
+  // Функция очистки исключений
+  function clearExclusions() {
+    if (confirm("Вы уверены, что хотите очистить список исключений?")) {
+      exclusions = [];
+      renderExclusions();
+      saveAllData();
+    }
+  }
+
+  // Функция применения исключений к кластерам
+  function applyExclusions() {
+    if (exclusions.length === 0) return;
+
+    for (let i = clusters.length - 1; i >= 0; i--) {
+      const cluster = clusters[i];
+
+      for (let j = cluster.keywords.length - 1; j >= 0; j--) {
+        const keyword = cluster.keywords[j];
+        const keywordLower = keyword.phrase.toLowerCase();
+
+        // Проверяем, содержит ли ключевая фраза любое из исключенных слов
+        if (exclusions.some((exclusion) => keywordLower.includes(exclusion))) {
+          cluster.keywords.splice(j, 1);
+        }
+      }
+
+      // Если кластер пуст, удаляем его
+      if (cluster.keywords.length === 0) {
+        clusters.splice(i, 1);
+      }
+    }
+
+    renderClusters();
+  }
+
   // Функция отображения кнопки "Вернуть"
   function showUndoButton() {
     if (lastDeletedItems) {
@@ -642,12 +878,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (confirm("Вы уверены, что хотите полностью очистить все данные?")) {
       clusters = [];
       articles = [];
+      exclusions = [];
       keywordsInput.value = "";
+      exclusionsInput.value = "";
       lastDeletedItems = null;
       selectedKeywords.clear();
 
       renderClusters();
       renderArticles();
+      renderExclusions();
       showUndoButton();
       updateSelectionButtons();
 
@@ -658,6 +897,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Очищаем localStorage
       localStorage.removeItem("clusteringAppData");
       localStorage.removeItem("keywordsInput");
+      localStorage.removeItem("exclusionsInput");
     }
   }
 
@@ -785,9 +1025,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const appData = {
       clusters: clusters,
       articles: articles,
+      exclusions: exclusions,
       lastDeletedItems: lastDeletedItems,
     };
     saveToLocalStorage("clusteringAppData", JSON.stringify(appData));
+    saveToLocalStorage("exclusionsInput", exclusionsInput.value);
   }
 
   // Загрузка сохраненных данных из localStorage
@@ -798,6 +1040,12 @@ document.addEventListener("DOMContentLoaded", function () {
       keywordsInput.value = savedInput;
     }
 
+    // Загрузка исключений
+    const savedExclusionsInput = loadFromLocalStorage("exclusionsInput");
+    if (savedExclusionsInput) {
+      exclusionsInput.value = savedExclusionsInput;
+    }
+
     // Загрузка состояния приложения
     const savedData = loadFromLocalStorage("clusteringAppData");
     if (savedData) {
@@ -805,10 +1053,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const parsedData = JSON.parse(savedData);
         clusters = parsedData.clusters || [];
         articles = parsedData.articles || [];
+        exclusions = parsedData.exclusions || [];
         lastDeletedItems = parsedData.lastDeletedItems || null;
 
         renderClusters();
         renderArticles();
+        renderExclusions();
         showUndoButton();
 
         exportButton.disabled = clusters.length === 0;

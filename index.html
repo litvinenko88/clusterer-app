@@ -50,6 +50,21 @@
           </div>
           <div class="input-column">
             <h3>
+              Исключения
+              <button id="excludeButton">
+                <i class="fas fa-ban"></i> Исключить
+              </button>
+              <button id="clearExclusionsButton">
+                <i class="fas fa-trash-alt"></i> Очистить
+              </button>
+            </h3>
+            <textarea
+              id="exclusionsInput"
+              placeholder="Введите слова для исключения (каждое с новой строки)"></textarea>
+            <div id="exclusionsList" class="exclusions-list"></div>
+          </div>
+          <div class="input-column">
+            <h3>
               Для темы статей
               <button id="exportArticlesButton" disabled>
                 <i class="fas fa-download"></i> Экспорт
@@ -78,6 +93,9 @@
         </button>
         <button id="addSelectedToArticlesButton" disabled>
           <i class="fas fa-plus"></i> Добавить в статьи
+        </button>
+        <button id="excludeSelectedButton" disabled>
+          <i class="fas fa-ban"></i> Исключить выбранные
         </button>
       </div>
     </div>

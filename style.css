@@ -13,6 +13,8 @@
   --header-bg: #2c3e50;
   --cluster-header-bg: #f2f2f2;
   --progress-color: #2ecc71;
+  --exclusion-color: #9b59b6;
+  --exclusion-hover: #8e44ad;
 }
 
 body {
@@ -25,7 +27,7 @@ body {
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   background-color: white;
   padding: 20px;
@@ -61,6 +63,7 @@ h3 {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 textarea {
@@ -222,10 +225,11 @@ button:disabled {
 }
 
 .delete-keyword,
-.add-to-articles {
+.add-to-articles,
+.exclude-keyword {
   padding: 3px 6px;
   font-size: 12px;
-  margin-right: 5px;
+  margin-bottom: 5px;
 }
 
 .add-to-articles {
@@ -244,6 +248,14 @@ button:disabled {
   background-color: var(--danger-hover);
 }
 
+.exclude-keyword {
+  background-color: var(--exclusion-color);
+}
+
+.exclude-keyword:hover {
+  background-color: var(--exclusion-hover);
+}
+
 .status {
   margin-top: 10px;
   font-style: italic;
@@ -259,6 +271,40 @@ button:disabled {
   overflow-y: auto;
   min-height: 200px;
   max-height: 200px;
+}
+
+.exclusions-list {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 100px;
+  max-height: 100px;
+  margin-top: 10px;
+}
+
+.exclusion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.exclusion-item:last-child {
+  border-bottom: none;
+}
+
+.remove-exclusion {
+  background-color: var(--danger-color);
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.remove-exclusion:hover {
+  background-color: var(--danger-hover);
 }
 
 .article-item {
@@ -335,6 +381,24 @@ button:disabled {
   background-color: var(--success-hover);
 }
 
+#excludeSelectedButton {
+  background-color: var(--exclusion-color);
+}
+
+#excludeSelectedButton:hover {
+  background-color: var(--exclusion-hover);
+}
+
+#excludeButton {
+  background-color: var(--exclusion-color);
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+#excludeButton:hover {
+  background-color: var(--exclusion-hover);
+}
+
 #clearArticlesButton {
   background-color: var(--danger-color);
   padding: 5px 8px;
@@ -342,6 +406,16 @@ button:disabled {
 }
 
 #clearArticlesButton:hover {
+  background-color: var(--danger-hover);
+}
+
+#clearExclusionsButton {
+  background-color: var(--danger-color);
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+#clearExclusionsButton:hover {
   background-color: var(--danger-hover);
 }
 
@@ -380,4 +454,8 @@ button:disabled {
 
 .select-all-checkbox {
   margin-right: 10px;
+}
+
+.highlighted {
+  background-color: #fffacd;
 }
