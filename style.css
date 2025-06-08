@@ -541,3 +541,72 @@ button:disabled {
 .fas {
   margin-right: 5px;
 }
+/* Новые стили для группировки и исключения */
+.grouping-controls,
+.exclusion-controls {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.grouping-controls h4,
+.exclusion-controls h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.grouping-buttons,
+.exclusion-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.grouping-btn,
+.exclusion-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.grouping-btn:hover,
+.exclusion-btn:hover {
+  background-color: #d0d0d0;
+}
+
+.grouping-btn.active,
+.exclusion-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.grouping-tooltip,
+.exclusion-tooltip {
+  font-size: 12px;
+  color: #666;
+  padding: 5px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.clusters-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  display: none;
+}

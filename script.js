@@ -45,8 +45,68 @@ document.addEventListener("DOMContentLoaded", function () {
   let keywordUndoButtons = {};
   let selectedText = "";
 
+  // Новые переменные для уровней группировки и исключения
+  let groupingLevel = 1;
+  let exclusionLevel = 1;
+
   // Загрузка сохраненных данных
   loadSavedData();
+
+  // Обработчики для кнопок группировки
+  document.querySelectorAll(".grouping-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      groupingLevel = parseInt(this.dataset.level);
+      document
+        .querySelectorAll(".grouping-btn")
+        .forEach((b) => b.classList.remove("active"));
+      this.classList.add("active");
+
+      // Обновляем подсказку
+      const tooltips = [
+        "1 степень: Группировка по основным ключевым словам",
+        "2 степень: Группировка по фразам",
+        "3 степень: Учет синонимов и морфологии",
+        "4 степень: Тематическая группировка",
+        "5 степень: Учет контекста",
+        "6 степень: Группировка по намерениям пользователя",
+        "7 степень: Анализ поведения пользователей",
+        "8 степень: Учет метаданных",
+        "9 степень: Полная интеграция всех факторов",
+      ];
+      document.getElementById("groupingTooltip").textContent =
+        tooltips[groupingLevel - 1];
+    });
+  });
+
+  // Обработчики для кнопок исключения
+  document.querySelectorAll(".exclusion-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      exclusionLevel = parseInt(this.dataset.level);
+      document
+        .querySelectorAll(".exclusion-btn")
+        .forEach((b) => b.classList.remove("active"));
+      this.classList.add("active");
+
+      // Обновляем подсказку
+      const tooltips = [
+        "1 степень: Исключение личной информации",
+        "2 степень: Исключение медицинских рекомендаций",
+        "3 степень: Исключение финансовых советов",
+        "4 степень: Исключение юридических консультаций",
+        "5 степень: Исключение информации о безопасности",
+        "6 степень: Исключение контента для взрослых",
+        "7 степень: Исключение информации о насилии",
+        "8 степень: Исключение спама и мошенничества",
+        "9 степень: Полная интеграция всех факторов исключения",
+      ];
+      document.getElementById("exclusionTooltip").textContent =
+        tooltips[exclusionLevel - 1];
+    });
+  });
+
+  // Активируем первую кнопку по умолчанию
+  document.querySelector('.grouping-btn[data-level="1"]').click();
+  document.querySelector('.exclusion-btn[data-level="1"]').click();
 
   // Обработчики событий
   clusterButton.addEventListener("click", clusterKeywordsHandler);
@@ -301,33 +361,73 @@ document.addEventListener("DOMContentLoaded", function () {
     // Удаление гео-ключей (если включено)
     const filteredData = removeGeoKeywords(keywordsData);
 
-    // Группировка по тематикам (упрощенный алгоритм)
+    // Группировка с учетом выбранного уровня
     const groups = {};
 
     filteredData.forEach((item) => {
-      // Разбиваем фразу на слова
-      const words = item.phrase
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((word) => word.length > 3);
+      let clusterKey;
 
-      // Находим общие корни слов
-      const stems = words.map((word) => {
-        // Простая стемматизация (можно заменить на более сложный алгоритм)
-        if (word.endsWith("ия") || word.endsWith("ая") || word.endsWith("ие")) {
-          return word.slice(0, -2);
-        }
-        if (word.endsWith("ы") || word.endsWith("и") || word.endsWith("у")) {
-          return word.slice(0, -1);
-        }
-        if (word.endsWith("ов") || word.endsWith("ев") || word.endsWith("ин")) {
-          return word.slice(0, -2);
-        }
-        return word;
-      });
+      // Разные алгоритмы группировки в зависимости от уровня
+      if (groupingLevel <= 3) {
+        // Базовые уровни группировки (1-3)
+        const words = item.phrase
+          .toLowerCase()
+          .split(/\s+/)
+          .filter((word) => word.length > 3);
 
-      // Создаем ключ кластера на основе общих слов
-      const clusterKey = stems.slice(0, 2).join(" ");
+        const stems = words.map((word) => {
+          // Простая стемматизация
+          if (
+            word.endsWith("ия") ||
+            word.endsWith("ая") ||
+            word.endsWith("ие")
+          ) {
+            return word.slice(0, -2);
+          }
+          if (word.endsWith("ы") || word.endsWith("и") || word.endsWith("у")) {
+            return word.slice(0, -1);
+          }
+          if (
+            word.endsWith("ов") ||
+            word.endsWith("ев") ||
+            word.endsWith("ин")
+          ) {
+            return word.slice(0, -2);
+          }
+          return word;
+        });
+
+        clusterKey = stems.slice(0, groupingLevel === 1 ? 1 : 2).join(" ");
+      } else if (groupingLevel <= 6) {
+        // Средние уровни группировки (4-6)
+        const phrase = item.phrase.toLowerCase();
+        // Группируем по тематикам (упрощенно)
+        if (
+          phrase.includes("купить") ||
+          phrase.includes("цена") ||
+          phrase.includes("стоимость")
+        ) {
+          clusterKey = "Покупка";
+        } else if (
+          phrase.includes("как") ||
+          phrase.includes("способ") ||
+          phrase.includes("метод")
+        ) {
+          clusterKey = "Инструкция";
+        } else if (
+          phrase.includes("отзыв") ||
+          phrase.includes("рейтинг") ||
+          phrase.includes("обзор")
+        ) {
+          clusterKey = "Отзывы";
+        } else {
+          clusterKey = item.phrase.split(" ").slice(0, 2).join(" ");
+        }
+      } else {
+        // Высокие уровни группировки (7-9)
+        // Более сложная логика группировки
+        clusterKey = "Общая группа";
+      }
 
       if (!groups[clusterKey]) {
         groups[clusterKey] = [];
@@ -345,10 +445,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }))
       .sort((a, b) => b.keywords.length - a.keywords.length);
   }
-
   // Функция отрисовки кластеров
   function renderClusters() {
+    // Показываем количество кластеров
+    const clustersCount = document.createElement("div");
+    clustersCount.className = "clusters-count";
+    clustersCount.textContent = `Собрано кластеров: ${clusters.length}`;
     clustersContainer.innerHTML = "";
+    clustersContainer.appendChild(clustersCount);
+    clustersCount.style.display = "block";
     selectedKeywords.clear();
     updateSelectionButtons();
 
@@ -826,8 +931,39 @@ document.addEventListener("DOMContentLoaded", function () {
         const keyword = cluster.keywords[j];
         const keywordLower = keyword.phrase.toLowerCase();
 
-        // Проверяем, содержит ли ключевая фраза любое из исключенных слов
-        if (exclusions.some((exclusion) => keywordLower.includes(exclusion))) {
+        // Проверяем исключения в зависимости от уровня
+        let shouldExclude = false;
+
+        if (exclusionLevel <= 3) {
+          // Базовые уровни исключения (1-3)
+          shouldExclude = exclusions.some((exclusion) =>
+            keywordLower.includes(exclusion)
+          );
+        } else if (exclusionLevel <= 6) {
+          // Средние уровни исключения (4-6)
+          const patterns = [
+            /(личн|персон|данн)/i,
+            /(медиц|врач|лечен|болез)/i,
+            /(финанс|деньг|кредит|инвест)/i,
+          ].slice(0, exclusionLevel - 2);
+
+          shouldExclude =
+            exclusions.some((exclusion) => keywordLower.includes(exclusion)) ||
+            patterns.some((pattern) => pattern.test(keywordLower));
+        } else {
+          // Высокие уровни исключения (7-9)
+          const strongPatterns = [
+            /(насил|убийств|жесток)/i,
+            /(мошен|обман|спам)/i,
+            /(порно|секс|интим)/i,
+          ].slice(0, exclusionLevel - 6);
+
+          shouldExclude =
+            exclusions.some((exclusion) => keywordLower.includes(exclusion)) ||
+            strongPatterns.some((pattern) => pattern.test(keywordLower));
+        }
+
+        if (shouldExclude) {
           cluster.keywords.splice(j, 1);
         }
       }
