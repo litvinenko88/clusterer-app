@@ -524,7 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 cell.innerHTML = "";
                 renderClusters();
               }
-            }, 3000);
+            }, 1000);
           }
         }
 
